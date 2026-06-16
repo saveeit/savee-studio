@@ -1,0 +1,72 @@
+[
+  {
+    "file": "/assets/01.jpg",
+    "name": "Asset 01",
+    "aspect": 0.5625
+  },
+  {
+    "file": "/assets/02.jpg",
+    "name": "Asset 02",
+    "aspect": 0.8
+  },
+  {
+    "file": "/assets/03.jpg",
+    "name": "Asset 03",
+    "aspect": 0.8
+  },
+  {
+    "file": "/assets/04.jpg",
+    "name": "Asset 04",
+    "aspect": 0.8
+  },
+  {
+    "file": "/assets/05.jpg",
+    "name": "Asset 05",
+    "aspect": 0.8
+  },
+  {
+    "file": "/assets/06.jpg",
+    "name": "Asset 06",
+    "aspect": 0.8
+  },
+  {
+    "file": "/assets/07.jpg",
+    "name": "Asset 07",
+    "aspect": 0.8
+  },
+  {
+    "file": "/assets/08.jpg",
+    "name": "Asset 08",
+    "aspect": 0.8
+  },
+  {
+    "file": "/assets/09.jpg",
+    "name": "Asset 09",
+    "aspect": 0.9492
+  },
+  {
+    "file": "/assets/10.jpg",
+    "name": "Asset 10",
+    "aspect": 0.8
+  },
+  {
+    "file": "/assets/11.jpg",
+    "name": "Asset 11",
+    "aspect": 1.323
+  },
+  {
+    "file": "/assets/12.jpg",
+    "name": "Asset 12",
+    "aspect": 0.8858
+  },
+  {
+    "file": "/assets/13.jpg",
+    "name": "Asset 13",
+    "aspect": 0.8525
+  },
+  {
+    "file": "/assets/14.jpg",
+    "name": "Asset 14",
+    "aspect": 1.2959
+  }
+]
