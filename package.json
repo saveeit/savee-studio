@@ -2,7 +2,7 @@
   "name": "after-web",
   "version": "0.1.0",
   "private": true,
-  "description": "Savee Animator — web-based animation template studio",
+  "description": "Savee Studio — web-based animation template studio",
   "packageManager": "pnpm@9.11.0",
   "scripts": {
     "dev": "next dev -p 3100",
