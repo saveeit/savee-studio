@@ -16,6 +16,9 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/cn";
 import { ASPECTS, useAnimator } from "../store";
+import { FONTS, fontById } from "../fonts";
+
+const FONT_CATEGORIES = ["Sans Serif", "Display", "Serif"] as const;
 import { ColorInput, Segmented, Slider, TextField, Toggle } from "./controls";
 import type { Asset } from "../types";
 
@@ -102,6 +105,7 @@ export function SettingsPanel() {
   const setCanvas = useAnimator((s) => s.setCanvas);
   const text = useAnimator((s) => s.text);
   const setText = useAnimator((s) => s.setText);
+  const clearTextOffsets = useAnimator((s) => s.clearTextOffsets);
   const assets = useAnimator((s) => s.assets);
   const addAssets = useAnimator((s) => s.addAssets);
   const removeAsset = useAnimator((s) => s.removeAsset);
@@ -189,15 +193,28 @@ export function SettingsPanel() {
             placeholder="Subhead"
             onChange={(v) => setText({ subhead: v })}
           />
-          <Segmented
-            label="Typeface"
-            value={text.font}
-            options={[
-              { label: "Serif", value: "serif" },
-              { label: "Sans", value: "sans" },
-            ]}
-            onChange={(v) => setText({ font: v as "serif" | "sans" })}
-          />
+          <div className="py-3">
+            <div className="mb-2.5 text-[13px] text-muted">Typeface</div>
+            <div className="relative">
+              <select
+                value={text.font}
+                onChange={(e) => setText({ font: e.target.value })}
+                style={{ fontFamily: fontById(text.font).family }}
+                className="w-full appearance-none rounded-[10px] border border-line bg-surface px-3 py-2.5 text-[13px] text-white outline-none transition-colors hover:border-gray-600"
+              >
+                {FONT_CATEGORIES.map((cat) => (
+                  <optgroup key={cat} label={cat}>
+                    {FONTS.filter((f) => f.category === cat).map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+            </div>
+          </div>
           <Segmented
             label="Position"
             value={text.position}
@@ -209,6 +226,17 @@ export function SettingsPanel() {
             ]}
             onChange={(v) => setText({ position: v as never })}
           />
+          {(text.offsets.headline || text.offsets.subhead) && (
+            <div className="flex items-center justify-between">
+              <span className="text-[13px] text-muted">Custom placement</span>
+              <button
+                onClick={clearTextOffsets}
+                className="text-[12px] font-medium text-gray-400 transition-colors hover:text-white"
+              >
+                Reset
+              </button>
+            </div>
+          )}
           <ColorInput label="Color" value={text.color} onChange={(v) => setText({ color: v })} />
           <Slider
             label="Size"

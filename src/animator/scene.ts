@@ -1,5 +1,6 @@
 import type { Asset, Layer, ParamValues, Template } from "./types";
 import type { TextOverlay } from "./store";
+import { fontById } from "./fonts";
 
 export interface ComposeArgs {
   template: Template;
@@ -37,7 +38,8 @@ function textLayers(text: TextOverlay, width: number, height: number): Layer[] {
   const out: Layer[] = [];
   const headSize = (text.size / 100) * width;
   const subSize = headSize * 0.42;
-  const family = text.font === "serif" ? "Georgia, serif" : "var(--font-sans)";
+  const font = fontById(text.font);
+  const family = font.family;
 
   const headlineY = (() => {
     switch (text.position) {
@@ -64,22 +66,26 @@ function textLayers(text: TextOverlay, width: number, height: number): Layer[] {
     }
   })();
 
+  // Free-drag offsets (normalized 0..1) override the preset position per part.
+  const ho = text.offsets.headline;
+  const so = text.offsets.subhead;
+
   if (text.headline) {
     out.push({
       id: "text-headline",
       type: "text",
       text: text.headline,
-      x: width / 2,
-      y: headlineY,
+      x: ho ? ho.x * width : width / 2,
+      y: ho ? ho.y * height : headlineY,
       w: width * 0.92,
       h: headSize * 1.4,
       color: text.color,
       fontSize: headSize,
       fontFamily: family,
-      fontWeight: text.font === "serif" ? 500 : 700,
-      letterSpacing: text.font === "serif" ? 0 : -headSize * 0.02,
+      fontWeight: font.headlineWeight,
+      letterSpacing: headSize * font.tracking,
       align: "center",
-      uppercase: text.font !== "serif",
+      uppercase: font.uppercase,
       z: 500,
       shadow: 0.35,
     });
@@ -89,15 +95,15 @@ function textLayers(text: TextOverlay, width: number, height: number): Layer[] {
       id: "text-subhead",
       type: "text",
       text: text.subhead,
-      x: width / 2,
-      y: subheadY,
+      x: so ? so.x * width : width / 2,
+      y: so ? so.y * height : subheadY,
       w: width * 0.9,
       h: subSize * 1.6,
       color: text.color,
       fontSize: subSize,
       fontFamily: family,
-      fontWeight: 400,
-      italic: text.font === "serif",
+      fontWeight: font.subheadWeight,
+      italic: !!font.subheadItalic,
       align: "center",
       z: 500,
       shadow: 0.3,
