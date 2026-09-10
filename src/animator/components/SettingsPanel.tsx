@@ -331,7 +331,7 @@ function AssetsSection() {
 
 export function SettingsPanel() {
   return (
-    <div className="flex h-full w-[320px] shrink-0 flex-col border-l border-separator bg-panel">
+    <div className="flex h-full min-h-0 flex-col">
       <div className="scroll-thin flex-1 overflow-y-auto">
         <CanvasSection />
         <BackgroundSection />

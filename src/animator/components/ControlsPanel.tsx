@@ -17,8 +17,8 @@ export function ControlsPanel() {
   const resetParams = useAnimator((s) => s.resetParams);
 
   return (
-    <div className="flex h-full w-[296px] shrink-0 flex-col border-r border-separator bg-panel">
-      <div className="px-6 pb-3 pt-6">
+    <div className="flex min-h-0 flex-1 flex-col border-t border-line">
+      <div className="px-6 pb-3 pt-4">
         <div className="flex items-center justify-between">
           <h2 className="text-[15px] font-medium text-white">Customize</h2>
           <button
@@ -29,9 +29,6 @@ export function ControlsPanel() {
             <RotateCcw className="h-3 w-3" />
             Reset
           </button>
-        </div>
-        <div className="mt-0.5 text-[13px] text-muted">
-          {template.name} <span className="text-gray-600">·</span> {template.group}
         </div>
       </div>
 

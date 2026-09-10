@@ -72,7 +72,7 @@ export function Timeline() {
   };
 
   return (
-    <div className="flex h-[64px] shrink-0 items-center gap-4 border-t border-separator bg-panel px-6">
+    <div className="flex h-[60px] shrink-0 items-center gap-4 rounded-2xl border border-line bg-panel px-5 shadow-2xl">
       <button
         onClick={togglePlay}
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-surface-2 text-white transition-colors hover:bg-gray-600"
