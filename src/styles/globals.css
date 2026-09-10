@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 :root {
+  /* `--font-sans` is supplied by next/font in _app; this is the fallback for
+     the brief window before that class is applied. */
   --font-sans: "Inter", system-ui, sans-serif;
 }
 

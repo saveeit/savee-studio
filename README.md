@@ -32,27 +32,48 @@ makes scrubbing, looping, and export all consistent.
   and the controls panel is generated automatically from it.
 - **Scene model** (`src/animator/scene.ts`) merges template layers with the global
   text overlay and sorts by paint order.
-- **Two renderers** consume the same `Layer[]`:
-  - `renderers/DomRenderer.tsx` — crisp live preview (absolutely-positioned DOM).
-  - `renderers/canvasRenderer.ts` — draws to a 2D canvas for **video export**
-    (`exporter.ts`). Exports **MP4 (H.264)** by default via deterministic,
-    frame-by-frame **WebCodecs** encoding (30fps), falling back to a real-time
-    `MediaRecorder` WebM where WebCodecs is unavailable. The selected **aspect
-    ratio sets the output resolution** (predefined in `store.ts`: 1:1→1080², 9:16→
-    1080×1920, 3:4→1080×1440, 4:3→1440×1080, 16:9→1920×1080).
-- **State** lives in a single zustand store (`src/animator/store.ts`):
-  selection, per-template params, canvas settings, text overlay, assets, playback.
+- **One renderer** (`renderers/canvasRenderer.ts`) draws the `Layer[]` to a 2D
+  canvas, and both the preview and the export go through it — so what you see is
+  what you get. The preview draws at screen resolution (capped at the export
+  resolution); the export draws at full size.
+- **Export** (`exporter.ts`) writes **MP4 (H.264)** by default via deterministic,
+  frame-by-frame **WebCodecs** encoding (30fps), falling back to a real-time
+  `MediaRecorder` WebM where WebCodecs is unavailable. The muxers are imported on
+  demand, so they stay out of the initial bundle. The selected **aspect ratio sets
+  the output resolution** (predefined in `store.ts`: 1:1→1080², 9:16→1080×1920,
+  3:4→1080×1440, 4:3→1440×1080, 16:9→1920×1080).
+- **State** lives in a single zustand store (`src/animator/store.ts`): selection,
+  per-template params, canvas settings, text overlay, assets, playback. None of it
+  is persisted yet, so a reload starts over.
+
+### First paint
+
+The animator itself is client-only (`dynamic` with `ssr: false`), so `pages/index.tsx`
+gives it a static skeleton to render as the loading state — the server HTML carries
+the layout instead of an empty div. Inter is self-hosted through `next/font`, so the
+first paint does not wait on a stylesheet from another origin.
+
+### The playhead is not React state
+
+The preview and the timeline subscribe to the playback loop (`usePlayback.ts`)
+and write to the DOM themselves, so a frame costs no render. Nothing subscribes
+to `time`; a component that needs it reads `useAnimator.getState()`.
 
 ### Placeholder assets
 
 The starter assets are bundled images in the repo (no network calls):
 
-- `public/assets/*.jpg` — downscaled (long side 1200px), served same-origin so
-  canvas export never hits CORS tainting.
+- `public/assets/*.avif` — AVIF, long side 1200px, served same-origin so canvas
+  export never hits CORS tainting. AVIF at quality 70 is 70% smaller than the
+  equivalent JPEG and stays above 41 dB PSNR on the worst image in the set.
 - `src/animator/placeholderAssets.json` — the manifest (file, name, aspect).
 
 To swap them, drop new images in `public/assets/` and update the manifest. Uploads
 from the right panel still work alongside these.
+
+The sidebar list points straight at the full-size file. It paints each asset in a
+32×40 box, so the set decodes about 61MB of bitmap to fill a few thousand pixels —
+worth a downscaled variant once the asset source settles.
 
 ### Templates included
 
@@ -66,9 +87,21 @@ Carousel · Stories (vertical filmstrip) · Grid · Orbit · Marquee · Hero.
 
 The controls panel, timeline, preview, and export all pick it up with no extra work.
 
+Keep `render` a pure function of `t`. It is what makes scrubbing, looping and
+export agree, and it means a template can be checked frame by frame without a
+browser.
+
 ## Roadmap / next steps
 
-- Real Savee inspo picker (currently generated gradient placeholders + uploads).
+- Real Savee inspo picker (currently bundled placeholders + uploads).
 - More templates (3D, parallax, spin, wheel variants) and per-layer keyframing.
 - A "Save as custom" preset library (the Custom tab + button are stubbed).
-- Per-asset focal point / cropping; audio track + waveform.
+- Per-asset focal point / cropping. Every template currently draws at 3:4, which
+  discards on average 15% of an asset and up to 43% of a landscape one —
+  `Asset.aspect` is recorded but nothing reads it yet.
+- Seamless loops. A scrolling or rotating template only repeats after a whole
+  cycle, so the loop cuts unless `speed × duration` lands on one — Orbit jumps a
+  third of the canvas diagonal at its default settings.
+- Undo/redo, keyboard transport shortcuts, MP4/WebM and frame-rate pickers
+  (`canvas.format` and `canvas.fps` exist in the store with no UI).
+- Audio track + waveform.

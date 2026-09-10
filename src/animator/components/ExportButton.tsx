@@ -3,7 +3,7 @@ import { Download, Loader2 } from "lucide-react";
 import { useAnimator } from "../store";
 import { TEMPLATES_BY_ID } from "../templates";
 import { canvasSize } from "./CanvasStage";
-import { downloadBlob, exportVideo } from "../exporter";
+import { downloadBlob, exportVideo, prefetchMuxers } from "../exporter";
 
 export function ExportButton() {
   const [busy, setBusy] = useState(false);
@@ -50,6 +50,8 @@ export function ExportButton() {
   return (
     <button
       onClick={run}
+      onPointerEnter={prefetchMuxers}
+      onFocus={prefetchMuxers}
       disabled={busy}
       className="relative flex h-9 shrink-0 items-center gap-2 overflow-hidden rounded-[10px] bg-white px-5 text-[13px] font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-80"
     >

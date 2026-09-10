@@ -1,6 +1,22 @@
 import { useEffect } from "react";
 import { useAnimator } from "./store";
 
+type FrameListener = (time: number) => void;
+
+const frameListeners = new Set<FrameListener>();
+
+/**
+ * Subscribe to the playback loop. Consumers that need per-frame updates (the
+ * preview, the timeline playhead) use this instead of subscribing to `time` in
+ * React, so a frame costs no render.
+ */
+export function onFrame(fn: FrameListener) {
+  frameListeners.add(fn);
+  return () => {
+    frameListeners.delete(fn);
+  };
+}
+
 /**
  * Single rAF loop that advances the playhead while `playing`. Reads/writes the
  * store imperatively to avoid re-subscribing every frame.
@@ -23,6 +39,7 @@ export function usePlayback() {
         }
         s.setTime(next);
       }
+      for (const fn of frameListeners) fn(useAnimator.getState().time);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);

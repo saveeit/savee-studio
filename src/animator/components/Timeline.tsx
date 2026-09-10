@@ -1,7 +1,8 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { Pause, Play, Repeat } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useAnimator } from "../store";
+import { onFrame } from "../usePlayback";
 import { ExportButton } from "./ExportButton";
 
 function fmt(t: number) {
@@ -9,7 +10,6 @@ function fmt(t: number) {
 }
 
 export function Timeline() {
-  const time = useAnimator((s) => s.time);
   const playing = useAnimator((s) => s.playing);
   const loop = useAnimator((s) => s.loop);
   const duration = useAnimator((s) => s.durationByTemplate[s.selectedId]);
@@ -21,11 +21,34 @@ export function Timeline() {
 
   const trackRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
+  const fillRef = useRef<HTMLDivElement>(null);
+  const headRef = useRef<HTMLDivElement>(null);
+  const clockRef = useRef<HTMLSpanElement>(null);
+  const frameRef = useRef<HTMLSpanElement>(null);
 
-  const looped = duration > 0 ? ((time % duration) + duration) % duration : 0;
-  const pct = duration > 0 ? (looped / duration) * 100 : 0;
   const totalFrames = Math.max(1, Math.round(duration * fps));
-  const curFrame = Math.min(totalFrames, Math.round(looped * fps));
+
+  // The playhead moves 60×/s. Writing it straight to the DOM keeps the whole
+  // timeline (and the export button under it) out of the frame loop.
+  useEffect(() => {
+    let lastPct = -1;
+    let lastFrame = -1;
+    return onFrame((time) => {
+      const looped = duration > 0 ? ((time % duration) + duration) % duration : 0;
+      const pct = duration > 0 ? (looped / duration) * 100 : 0;
+      if (pct !== lastPct) {
+        lastPct = pct;
+        if (fillRef.current) fillRef.current.style.width = `${pct}%`;
+        if (headRef.current) headRef.current.style.left = `${pct}%`;
+        if (clockRef.current) clockRef.current.textContent = fmt(looped);
+      }
+      const frame = Math.min(totalFrames, Math.round(looped * fps));
+      if (frame !== lastFrame) {
+        lastFrame = frame;
+        if (frameRef.current) frameRef.current.textContent = String(frame).padStart(4, "0");
+      }
+    });
+  }, [duration, fps, totalFrames]);
 
   const seek = (clientX: number) => {
     const el = trackRef.current;
@@ -77,21 +100,24 @@ export function Timeline() {
       >
         <div className="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-surface-2" />
         <div
+          ref={fillRef}
           className="absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-gray-300"
-          style={{ width: `${pct}%` }}
+          style={{ width: "0%" }}
         />
         <div
+          ref={headRef}
           className="absolute top-1/2 h-4 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow"
-          style={{ left: `${pct}%` }}
+          style={{ left: "0%" }}
         />
       </div>
 
       <div className="shrink-0 text-right font-mono text-[12px] leading-tight text-gray-400">
         <div className="tabular-nums text-gray-200">
-          {fmt(looped)} <span className="text-gray-600">/ {fmt(duration)}</span>
+          <span ref={clockRef}>{fmt(0)}</span>{" "}
+          <span className="text-gray-600">/ {fmt(duration)}</span>
         </div>
         <div className="tabular-nums text-[11px] text-gray-600">
-          {String(curFrame).padStart(4, "0")} / {String(totalFrames).padStart(4, "0")} f
+          <span ref={frameRef}>0000</span> / {String(totalFrames).padStart(4, "0")} f
         </div>
       </div>
 

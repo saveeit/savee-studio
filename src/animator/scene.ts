@@ -34,7 +34,9 @@ export function composeScene(args: ComposeArgs): Layer[] {
   return layers.sort((a, b) => (a.z ?? 0) - (b.z ?? 0));
 }
 
-function textLayers(text: TextOverlay, width: number, height: number): Layer[] {
+/** Text overlay boxes for a given canvas size — exported so the stage can
+ *  position drag handles without recomposing the whole scene. */
+export function textLayers(text: TextOverlay, width: number, height: number): Layer[] {
   const out: Layer[] = [];
   const headSize = (text.size / 100) * width;
   const subSize = headSize * 0.42;

@@ -1,5 +1,3 @@
-import * as Mp4 from "mp4-muxer";
-import * as Webm from "webm-muxer";
 import type { Asset, ParamValues, Template } from "./types";
 import type { TextOverlay } from "./store";
 import { composeScene } from "./scene";
@@ -68,16 +66,23 @@ async function exportWebCodecs(args: ExportArgs): Promise<ExportResult> {
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("2D context unavailable");
 
-  const muxer = isMp4
-    ? new Mp4.Muxer({
-        target: new Mp4.ArrayBufferTarget(),
-        video: { codec: "avc", width, height, frameRate: fps },
-        fastStart: "in-memory",
-      })
-    : new Webm.Muxer({
-        target: new Webm.ArrayBufferTarget(),
-        video: { codec: "V_VP9", width, height, frameRate: fps },
-      });
+  // Muxers are ~130 kB of source that only matter once the user exports, so the
+  // one we need is pulled in here instead of at module load.
+  let muxer;
+  if (isMp4) {
+    const Mp4 = await import("mp4-muxer");
+    muxer = new Mp4.Muxer({
+      target: new Mp4.ArrayBufferTarget(),
+      video: { codec: "avc", width, height, frameRate: fps },
+      fastStart: "in-memory",
+    });
+  } else {
+    const Webm = await import("webm-muxer");
+    muxer = new Webm.Muxer({
+      target: new Webm.ArrayBufferTarget(),
+      video: { codec: "V_VP9", width, height, frameRate: fps },
+    });
+  }
 
   const encoder = new VideoEncoder({
     output: (chunk, meta) =>
@@ -129,6 +134,11 @@ async function exportWebCodecs(args: ExportArgs): Promise<ExportResult> {
     ext: isMp4 ? "mp4" : "webm",
     encoder: "webcodecs",
   };
+}
+
+export function prefetchMuxers() {
+  void import("mp4-muxer");
+  void import("webm-muxer");
 }
 
 function pickRecorderMime(): string {
