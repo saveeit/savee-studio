@@ -1,6 +1,16 @@
-import type { Layer, Template } from "../types";
+import type { Layer, ParamValues, Template } from "../types";
 import { clamp, mapClamp } from "../easing";
 import { gauss, num, pick, str, wrap } from "./_shared";
+
+const THUMB_ASPECT = 3 / 4;
+
+/** Shared by `render` and `loopCycle` so the two can never drift apart. */
+function strip(params: ParamValues, width: number) {
+  const count = Math.round(num(params.count, 7));
+  const thumbW = (num(params.thumbSize, 100) / 100) * width * 0.26;
+  const spacing = thumbW + num(params.gap);
+  return { count, thumbW, thumbH: thumbW / THUMB_ASPECT, spacing, total: count * spacing };
+}
 
 export const carousel: Template = {
   id: "carousel",
@@ -29,18 +39,13 @@ export const carousel: Template = {
     { type: "slider", key: "speed", label: "Speed", min: 0, max: 300, default: 90, unit: "px/s" },
     { type: "slider", key: "drift", label: "Vertical Drift", min: 0, max: 60, default: 0 },
   ],
+  loopCycle: ({ params, width }) => ({ span: strip(params, width).total, speedKey: "speed" }),
   render: ({ raw, width, height, assets, params }) => {
     const cx = width / 2;
     const cy = height / 2;
     const dir = str(params.direction, "left") === "left" ? -1 : 1;
 
-    const count = Math.round(num(params.count, 7));
-    const aspectWH = 3 / 4;
-    const thumbW = (num(params.thumbSize, 100) / 100) * width * 0.26;
-    const thumbH = thumbW / aspectWH;
-    const gap = num(params.gap);
-    const spacing = thumbW + gap;
-    const total = count * spacing;
+    const { count, thumbW, thumbH, spacing, total } = strip(params, width);
 
     const bigScale = num(params.bigScale, 150) / 100;
     const focusW = (num(params.focus, 42) / 100) * width * 0.5;

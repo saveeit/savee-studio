@@ -24,15 +24,16 @@ export function TemplatePanel() {
   const groups = useMemo(() => groupTemplates(filtered), [filtered]);
 
   return (
-    <div className="flex h-full w-[272px] shrink-0 flex-col border-r border-separator bg-panel">
+    <div className="flex h-full w-[228px] shrink-0 flex-col border-r border-separator bg-panel xl:w-[272px]">
       {/* tabs */}
-      <div className="flex gap-1 px-5 pb-3 pt-6">
+      <div className="flex gap-1 px-4 pb-3 pt-6 xl:px-5">
         {(["templates", "custom"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
+            aria-pressed={tab === t}
             className={cn(
-              "text-[15px] font-medium capitalize transition-colors",
+              "rounded text-[15px] font-medium capitalize transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
               tab === t ? "text-white" : "text-gray-600 hover:text-gray-300",
             )}
           >
@@ -43,10 +44,12 @@ export function TemplatePanel() {
       </div>
 
       {/* search */}
-      <div className="px-5 pb-3">
+      <div className="px-4 pb-3 xl:px-5">
         <div className="flex items-center gap-2 rounded-[10px] border border-line bg-surface px-3 py-2.5">
-          <Search className="h-4 w-4 text-gray-500" />
+          <Search className="h-4 w-4 text-gray-500" aria-hidden />
           <input
+            type="search"
+            aria-label="Search templates"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search templates"
@@ -74,8 +77,9 @@ export function TemplatePanel() {
                   <button
                     key={t.id}
                     onClick={() => selectTemplate(t.id)}
+                    aria-current={active ? "true" : undefined}
                     className={cn(
-                      "group flex w-full items-center justify-between rounded-[10px] px-3 py-2.5 text-left transition-colors",
+                      "group flex w-full items-center justify-between rounded-[10px] px-3 py-2.5 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
                       active ? "bg-surface" : "hover:bg-surface/60",
                     )}
                   >

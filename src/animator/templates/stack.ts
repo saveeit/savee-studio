@@ -1,9 +1,20 @@
-import type { Layer, Template } from "../types";
+import type { Layer, ParamValues, Template } from "../types";
 import { clamp, mapClamp } from "../easing";
 import { gauss, num, pick, str, wrap } from "./_shared";
 
 // Vertical filmstrip à la "Stories" — a column of thumbs scrolls past a fixed
 // selector frame; the framed item blooms.
+const THUMB_ASPECT = 3 / 4;
+
+/** Shared by `render` and `loopCycle` so the two can never drift apart. */
+function filmstrip(params: ParamValues, width: number) {
+  const count = Math.round(num(params.count, 8));
+  const thumbW = (num(params.thumbSize, 100) / 100) * width * 0.34;
+  const thumbH = thumbW / THUMB_ASPECT;
+  const spacing = thumbH + num(params.gap);
+  return { count, thumbW, thumbH, spacing, totalSpan: count * spacing };
+}
+
 export const stack: Template = {
   id: "stack",
   name: "Stories",
@@ -32,18 +43,13 @@ export const stack: Template = {
     { type: "slider", key: "speed", label: "Speed", min: 0, max: 220, default: 70, unit: "px/s" },
     { type: "toggle", key: "selector", label: "Show Selector", default: true },
   ],
+  loopCycle: ({ params, width }) => ({ span: filmstrip(params, width).totalSpan, speedKey: "speed" }),
   render: ({ raw, width, height, assets, params }) => {
     const cx = width / 2;
     const cy = height / 2;
     const dir = str(params.direction, "down") === "down" ? 1 : -1;
 
-    const count = Math.round(num(params.count, 8));
-    const aspectWH = 3 / 4;
-    const thumbW = (num(params.thumbSize, 100) / 100) * width * 0.34;
-    const thumbH = thumbW / aspectWH;
-    const gap = num(params.gap);
-    const spacing = thumbH + gap;
-    const totalSpan = count * spacing;
+    const { count, thumbW, thumbH, spacing, totalSpan } = filmstrip(params, width);
 
     const bigScale = num(params.bigScale, 132) / 100;
     const radius = num(params.cornerRadius, 6);

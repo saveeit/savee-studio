@@ -5,6 +5,18 @@ import { drawScene, preloadImages } from "./renderers/canvasRenderer";
 
 export type ExportFormat = "mp4" | "webm";
 
+/** Thrown when the caller aborts; distinguishes a cancel from a real failure. */
+export class ExportCancelled extends Error {
+  constructor() {
+    super("Export cancelled");
+    this.name = "ExportCancelled";
+  }
+}
+
+function throwIfAborted(signal: AbortSignal | undefined) {
+  if (signal?.aborted) throw new ExportCancelled();
+}
+
 export interface ExportArgs {
   template: Template;
   params: ParamValues;
@@ -17,6 +29,7 @@ export interface ExportArgs {
   text: TextOverlay;
   format: ExportFormat;
   onProgress?: (p: number) => void;
+  signal?: AbortSignal;
 }
 
 export interface ExportResult {
@@ -100,33 +113,43 @@ async function exportWebCodecs(args: ExportArgs): Promise<ExportResult> {
   const usPerFrame = 1_000_000 / fps;
   const gop = Math.max(1, Math.round(fps * 2));
 
-  for (let i = 0; i < total; i++) {
-    const raw = i / fps;
-    const layers = composeScene({ ...args, raw });
-    drawScene(ctx, layers, width, height, background, cache);
+  try {
+    for (let i = 0; i < total; i++) {
+      throwIfAborted(args.signal);
+      const raw = i / fps;
+      const layers = composeScene({ ...args, raw });
+      drawScene(ctx, layers, width, height, background, cache);
 
-    const frame = new VideoFrame(canvas, {
-      timestamp: Math.round(i * usPerFrame),
-      duration: Math.round(usPerFrame),
-    });
-    encoder.encode(frame, { keyFrame: i % gop === 0 });
-    frame.close();
-    args.onProgress?.((i + 1) / total);
-
-    // backpressure: don't let the encode queue run away
-    if (encoder.encodeQueueSize > 8) {
-      await new Promise<void>((resolve) => {
-        const id = setInterval(() => {
-          if (encoder.encodeQueueSize <= 4) {
-            clearInterval(id);
-            resolve();
-          }
-        }, 4);
+      const frame = new VideoFrame(canvas, {
+        timestamp: Math.round(i * usPerFrame),
+        duration: Math.round(usPerFrame),
       });
-    }
-  }
+      encoder.encode(frame, { keyFrame: i % gop === 0 });
+      frame.close();
+      args.onProgress?.((i + 1) / total);
 
-  await encoder.flush();
+      // backpressure: don't let the encode queue run away
+      if (encoder.encodeQueueSize > 8) {
+        await new Promise<void>((resolve) => {
+          const id = setInterval(() => {
+            if (encoder.encodeQueueSize <= 4 || args.signal?.aborted) {
+              clearInterval(id);
+              resolve();
+            }
+          }, 4);
+        });
+      }
+    }
+    await encoder.flush();
+  } catch (err) {
+    // A half-configured encoder holds onto hardware, so let it go either way.
+    try {
+      encoder.close();
+    } catch {
+      /* already closed */
+    }
+    throw err;
+  }
   muxer.finalize();
   const buffer = (muxer.target as { buffer: ArrayBuffer }).buffer;
   return {
@@ -178,6 +201,12 @@ function exportMediaRecorder(args: ExportArgs): Promise<ExportResult> {
 
       const start = performance.now();
       const frame = (now: number) => {
+        if (args.signal?.aborted) {
+          recorder.onstop = null;
+          recorder.stop();
+          reject(new ExportCancelled());
+          return;
+        }
         const raw = (now - start) / 1000;
         const layers = composeScene({ ...args, raw });
         drawScene(ctx, layers, width, height, background, cache);
@@ -193,10 +222,12 @@ function exportMediaRecorder(args: ExportArgs): Promise<ExportResult> {
 }
 
 export async function exportVideo(args: ExportArgs): Promise<ExportResult> {
+  throwIfAborted(args.signal);
   if (hasWebCodecs()) {
     try {
       return await exportWebCodecs(args);
     } catch (err) {
+      if (err instanceof ExportCancelled) throw err;
       // MP4 with no H.264 support → degrade to a real-time WebM rather than fail.
       if (args.format === "webm") return exportMediaRecorder(args);
       console.warn("WebCodecs export failed, falling back to WebM:", err);

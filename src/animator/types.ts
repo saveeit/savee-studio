@@ -113,6 +113,13 @@ export interface RenderContext {
   params: ParamValues;
 }
 
+export interface LoopCycle {
+  /** How far the arrangement travels before it repeats, in `speed`'s units. */
+  span: number;
+  /** Param holding the speed, expressed in span units per second. */
+  speedKey: string;
+}
+
 export interface Template {
   id: string;
   name: string;
@@ -122,6 +129,12 @@ export interface Template {
   defaultDuration: number;
   params: Param[];
   render: (ctx: RenderContext) => Layer[];
+  /**
+   * Scrolling and rotating templates only repeat after travelling a whole
+   * cycle, so the loop cuts unless speed × duration lands on a multiple of it.
+   * Declaring the cycle lets the UI say so and offer a value that closes it.
+   */
+  loopCycle?: (args: { params: ParamValues; width: number; height: number }) => LoopCycle | null;
 }
 
 export function defaults(params: Param[]): ParamValues {
