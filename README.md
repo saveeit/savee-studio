@@ -46,12 +46,18 @@ makes scrubbing, looping, and export all consistent.
   per-template params, canvas settings, text overlay, assets, playback. None of it
   is persisted yet, so a reload starts over.
 
+### First paint
+
+The animator itself is client-only (`dynamic` with `ssr: false`), so `pages/index.tsx`
+gives it a static skeleton to render as the loading state — the server HTML carries
+the layout instead of an empty div. Inter is self-hosted through `next/font`, so the
+first paint does not wait on a stylesheet from another origin.
+
 ### The playhead is not React state
 
 The preview and the timeline subscribe to the playback loop (`usePlayback.ts`)
 and write to the DOM themselves, so a frame costs no render. Nothing subscribes
 to `time`; a component that needs it reads `useAnimator.getState()`.
-
 
 ### Placeholder assets
 
@@ -63,8 +69,11 @@ The starter assets are bundled images in the repo (no network calls):
   otherwise decode the full-size file into a 32×40 box.
 - `src/animator/placeholderAssets.json` — the manifest (file, name, aspect).
 
-To swap them, drop new images in `public/assets/` and update the manifest. Uploads
-from the right panel still work alongside these.
+To swap them, drop new images in `public/assets/`, put a downscaled copy of each
+under `public/assets/thumbs/` with the same filename, and update the manifest —
+the thumb path is derived from the file path, so a missing one shows as a broken
+image in the sidebar. Uploads from the right panel still work alongside these,
+and get a thumbnail generated in the browser.
 
 ### Templates included
 
@@ -90,23 +99,9 @@ browser.
 - Per-asset focal point / cropping. Every template currently draws at 3:4, which
   discards on average 15% of an asset and up to 43% of a landscape one —
   `Asset.aspect` is recorded but nothing reads it yet.
-- Seamless loops. A template that scrolls or rotates only repeats after
-  travelling a whole cycle, so the loop cuts unless `speed × duration` lands on a
-  multiple of it. At factory settings Orbit jumps a third of the canvas diagonal
-  when it wraps, and Carousel, Marquee and Stories each have images appear from
-  nowhere. Closing it means either constraining those two controls against each
-  other, or blending the tail into the head at export.
-- Persistence. Nothing survives a reload today, under a top bar that reads "Sign
-  in to save your work". Params, canvas and text are plain JSON and would fit in
-  `localStorage`; uploads need IndexedDB, since an object URL dies with the page
-  that made it.
-- Cancelling an export, and an estimate of how long one will take. Today it runs
-  to completion with only a percentage, and reports its outcome through
-  `alert()`.
+- Seamless loops. A scrolling or rotating template only repeats after a whole
+  cycle, so the loop cuts unless `speed × duration` lands on one — Orbit jumps a
+  third of the canvas diagonal at its default settings.
 - Undo/redo, keyboard transport shortcuts, MP4/WebM and frame-rate pickers
   (`canvas.format` and `canvas.fps` exist in the store with no UI).
-- A responsive layout. The three panels are 888px of fixed width with no
-  breakpoints, leaving 392px of stage on a 1280px screen.
-- Accessibility beyond the slider: the segmented, toggle and colour controls
-  expose no role or state, and there are no focus rings.
 - Audio track + waveform.
