@@ -16,14 +16,26 @@ export const ASPECTS: { id: AspectId; w: number; h: number; width: number; heigh
 // Fixed export frame rate (the FPS control was removed from the UI).
 export const EXPORT_FPS = 30;
 
+/**
+ * Normalized center position for a dragged text part — fractions of canvas
+ * width/height (0..1), so placement survives aspect-ratio changes and maps
+ * 1:1 to the export resolution. This is the shape to persist in the DB.
+ */
+export interface TextOffset {
+  x: number;
+  y: number;
+}
+
 export interface TextOverlay {
   show: boolean;
   headline: string;
   subhead: string;
   color: string;
-  font: "sans" | "serif";
+  font: string; // font id from fonts.ts (FONTS manifest)
   position: "top" | "center" | "bottom" | "split";
   size: number; // headline size as % of canvas width
+  /** Free-drag placement; overrides `position` per part when set. */
+  offsets: { headline?: TextOffset; subhead?: TextOffset };
 }
 
 export type ExportFormat = "mp4" | "webm";
@@ -60,6 +72,8 @@ interface AnimatorState {
 
   setCanvas: (patch: Partial<CanvasSettings>) => void;
   setText: (patch: Partial<TextOverlay>) => void;
+  setTextOffset: (part: "headline" | "subhead", offset: TextOffset) => void;
+  clearTextOffsets: () => void;
 
   addAssets: (assets: Asset[]) => void;
   removeAsset: (id: string) => void;
@@ -98,6 +112,7 @@ export const useAnimator = create<AnimatorState>((set, get) => ({
     font: "serif",
     position: "split",
     size: 9,
+    offsets: {},
   },
   assets: makePlaceholders(),
 
@@ -133,7 +148,14 @@ export const useAnimator = create<AnimatorState>((set, get) => ({
     })),
 
   setCanvas: (patch) => set((s) => ({ canvas: { ...s.canvas, ...patch } })),
-  setText: (patch) => set((s) => ({ text: { ...s.text, ...patch } })),
+  setText: (patch) =>
+    set((s) => ({
+      // Picking a position preset re-anchors any freely-dragged text.
+      text: { ...s.text, ...patch, ...("position" in patch ? { offsets: {} } : null) },
+    })),
+  setTextOffset: (part, offset) =>
+    set((s) => ({ text: { ...s.text, offsets: { ...s.text.offsets, [part]: offset } } })),
+  clearTextOffsets: () => set((s) => ({ text: { ...s.text, offsets: {} } })),
 
   addAssets: (assets) => set((s) => ({ assets: [...s.assets, ...assets] })),
   removeAsset: (id) => set((s) => ({ assets: s.assets.filter((a) => a.id !== id) })),
