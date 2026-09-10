@@ -1,71 +1,71 @@
 [
   {
-    "file": "/assets/01.jpg",
+    "file": "/assets/01.avif",
     "name": "Asset 01",
     "aspect": 0.5625
   },
   {
-    "file": "/assets/02.jpg",
+    "file": "/assets/02.avif",
     "name": "Asset 02",
     "aspect": 0.8
   },
   {
-    "file": "/assets/03.jpg",
+    "file": "/assets/03.avif",
     "name": "Asset 03",
     "aspect": 0.8
   },
   {
-    "file": "/assets/04.jpg",
+    "file": "/assets/04.avif",
     "name": "Asset 04",
     "aspect": 0.8
   },
   {
-    "file": "/assets/05.jpg",
+    "file": "/assets/05.avif",
     "name": "Asset 05",
     "aspect": 0.8
   },
   {
-    "file": "/assets/06.jpg",
+    "file": "/assets/06.avif",
     "name": "Asset 06",
     "aspect": 0.8
   },
   {
-    "file": "/assets/07.jpg",
+    "file": "/assets/07.avif",
     "name": "Asset 07",
     "aspect": 0.8
   },
   {
-    "file": "/assets/08.jpg",
+    "file": "/assets/08.avif",
     "name": "Asset 08",
     "aspect": 0.8
   },
   {
-    "file": "/assets/09.jpg",
+    "file": "/assets/09.avif",
     "name": "Asset 09",
     "aspect": 0.9492
   },
   {
-    "file": "/assets/10.jpg",
+    "file": "/assets/10.avif",
     "name": "Asset 10",
     "aspect": 0.8
   },
   {
-    "file": "/assets/11.jpg",
+    "file": "/assets/11.avif",
     "name": "Asset 11",
     "aspect": 1.323
   },
   {
-    "file": "/assets/12.jpg",
+    "file": "/assets/12.avif",
     "name": "Asset 12",
     "aspect": 0.8858
   },
   {
-    "file": "/assets/13.jpg",
+    "file": "/assets/13.avif",
     "name": "Asset 13",
     "aspect": 0.8525
   },
   {
-    "file": "/assets/14.jpg",
+    "file": "/assets/14.avif",
     "name": "Asset 14",
     "aspect": 1.2959
   }

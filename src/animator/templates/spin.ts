@@ -1,5 +1,5 @@
 import type { Layer, Template } from "../types";
-import { clamp, easeInOutSine } from "../easing";
+import { TAU, clamp } from "../easing";
 import { num, pick, bool } from "./_shared";
 
 // Single hero image: slow zoom/rotate (Ken Burns) with optional crossfade
@@ -19,7 +19,7 @@ export const spin: Template = {
     { type: "slider", key: "crossfade", label: "Crossfade", min: 0.1, max: 2, step: 0.1, default: 0.8, unit: "s" },
     { type: "toggle", key: "cycle", label: "Cycle Assets", default: true },
   ],
-  render: ({ raw, width, height, assets, params }) => {
+  render: ({ raw, duration, width, height, assets, params }) => {
     const cx = width / 2;
     const cy = height / 2;
     const sizeF = num(params.size, 80) / 100;
@@ -35,15 +35,16 @@ export const spin: Template = {
     const rotate = num(params.rotate, 0);
     const cycle = bool(params.cycle, true);
 
-    const hold = num(params.hold, 2.5);
-    const fade = num(params.crossfade, 0.8);
-    const slideDur = hold + fade;
+    // Rotation is driven off the loop phase so it returns to where it started
+    // instead of cutting at the wrap.
+    const loopPhase = duration > 0 ? raw / duration : 0;
+    const drift = rotate * Math.sin(TAU * loopPhase);
 
     const layers: Layer[] = [];
 
     if (!cycle || assets.length <= 1) {
-      const phase = (raw % slideDur) / slideDur;
-      const z = 1 + zoom * easeInOutSine(phase);
+      // Single image: breathe in and back out across the loop so the seam is
+      // invisible rather than snapping from full zoom back to none.
       layers.push({
         id: "hero",
         type: "image",
@@ -52,8 +53,8 @@ export const spin: Template = {
         y: cy,
         w,
         h,
-        scale: z,
-        rotation: rotate * Math.sin(raw * 0.3),
+        scale: 1 + zoom * (1 - Math.cos(TAU * loopPhase)) / 2,
+        rotation: drift,
         radius,
         z: 1,
         shadow: 0.45,
@@ -61,15 +62,27 @@ export const spin: Template = {
       return layers;
     }
 
-    // crossfade between consecutive slides
+    // Fit a whole number of slides into the loop. Otherwise the wrap lands in
+    // the middle of a slide and cuts.
+    const slides = Math.max(1, Math.round(duration / (num(params.hold, 2.5) + num(params.crossfade, 0.8))));
+    const slideDur = duration / slides;
+    const fade = Math.min(num(params.crossfade, 0.8), slideDur * 0.6);
+    const hold = slideDur - fade;
+
     const slideIndex = Math.floor(raw / slideDur);
     const within = raw - slideIndex * slideDur;
-    const cur = slideIndex;
-    const next = slideIndex + 1;
+    const cur = ((slideIndex % slides) + slides) % slides;
+    const next = (cur + 1) % slides;
 
-    const baseZoom = (local: number) => 1 + zoom * easeInOutSine(clamp(local / slideDur));
+    // A slide is on screen from its pre-roll (while the previous one fades out)
+    // until it has faded out itself, so its zoom is one straight ramp over that
+    // whole life, addressed by the slide's own local time. Because both roles
+    // read the same ramp, the handoff carries the same value *and* the same
+    // speed across — an eased curve would flatten to zero at each end and read
+    // as a pause.
+    const life = slideDur + fade;
+    const zoomAt = (local: number) => 1 + zoom * clamp((local + fade) / life);
 
-    // current slide fades out during the fade window at the end
     const curOpacity = within > hold ? 1 - (within - hold) / fade : 1;
     layers.push({
       id: `hero-${cur}`,
@@ -79,16 +92,16 @@ export const spin: Template = {
       y: cy,
       w,
       h,
-      scale: baseZoom(within),
-      rotation: rotate * Math.sin((raw + cur) * 0.3),
+      scale: zoomAt(within),
+      rotation: drift,
       opacity: clamp(curOpacity),
       radius,
       z: 1,
       shadow: 0.45,
     });
 
-    if (within > hold) {
-      const nOpacity = (within - hold) / fade;
+    if (slides > 1 && within > hold) {
+      const p = (within - hold) / fade;
       layers.push({
         id: `hero-${next}`,
         type: "image",
@@ -97,9 +110,9 @@ export const spin: Template = {
         y: cy,
         w,
         h,
-        scale: 1 + zoom * 0.15 + zoom * 0.15 * (within - hold),
-        rotation: rotate * Math.sin((raw + next) * 0.3),
-        opacity: clamp(nOpacity),
+        scale: zoomAt(within - slideDur),
+        rotation: drift,
+        opacity: clamp(p),
         radius,
         z: 2,
         shadow: 0.45,

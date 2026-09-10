@@ -40,6 +40,19 @@ function roundRect(
   ctx.closePath();
 }
 
+let sansCache: string | null = null;
+
+/** Resolve `--font-sans` once — next/font generates the real family name. */
+function sansStack(): string {
+  if (sansCache) return sansCache;
+  const v =
+    typeof window !== "undefined"
+      ? getComputedStyle(document.documentElement).getPropertyValue("--font-sans").trim()
+      : "";
+  sansCache = v || "Inter, sans-serif";
+  return sansCache;
+}
+
 /** Draw a full scene to a 2D context (used for export). */
 export function drawScene(
   ctx: CanvasRenderingContext2D,
@@ -76,7 +89,7 @@ export function drawScene(
       ctx.fillStyle = l.color ?? "#fff";
       const weight = l.fontWeight ?? 400;
       const style = l.italic ? "italic" : "normal";
-      const family = (l.fontFamily ?? "sans-serif").replace("var(--font-sans)", "Inter, sans-serif");
+      const family = (l.fontFamily ?? "sans-serif").replace("var(--font-sans)", sansStack());
       ctx.font = `${style} ${weight} ${l.fontSize ?? 40}px ${family}`;
       ctx.textAlign = l.align ?? "center";
       ctx.textBaseline = "middle";
@@ -141,4 +154,31 @@ export function drawScene(
     }
     ctx.restore();
   }
+}
+
+/**
+ * Persistent image cache for the live preview. Unlike `preloadImages` it does
+ * not block on the full set — each image marks the frame dirty as it arrives.
+ */
+export function createImageLoader(onLoad: () => void) {
+  const cache: ImageCache = new Map();
+  const pending = new Set<string>();
+  return {
+    cache,
+    ensure(srcs: (string | undefined)[]) {
+      for (const src of srcs) {
+        if (!src || cache.has(src) || pending.has(src)) continue;
+        pending.add(src);
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          cache.set(src, img);
+          pending.delete(src);
+          onLoad();
+        };
+        img.onerror = () => pending.delete(src);
+        img.src = src;
+      }
+    },
+  };
 }
