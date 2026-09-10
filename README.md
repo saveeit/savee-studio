@@ -54,12 +54,6 @@ The preview and the timeline subscribe to the playback loop (`usePlayback.ts`)
 and write to the DOM themselves, so a frame costs no render. Nothing subscribes
 to `time`; a component that needs it reads `useAnimator.getState()`.
 
-### Loops
-
-Templates that scroll or rotate only repeat after travelling a whole cycle, so
-the loop cuts unless `speed × duration` lands on a multiple of it. Those
-templates declare a `loopCycle`, and the controls panel says when the current
-settings cut and offers a duration or a speed that closes it.
 
 ### Placeholder assets
 
@@ -83,8 +77,6 @@ Carousel · Stories (vertical filmstrip) · Grid · Orbit · Marquee · Hero.
 1. Create `src/animator/templates/yours.ts` exporting a `Template` (id, name, group,
    `defaultDuration`, `params`, `render`).
 2. Register it in `src/animator/templates/index.ts`.
-3. If it scrolls or rotates, add `loopCycle` so the panel can tell the user when
-   their settings would cut the loop.
 
 The controls panel, timeline, preview, and export all pick it up with no extra work.
 
@@ -100,6 +92,12 @@ browser.
 - Per-asset focal point / cropping. Every template currently draws at 3:4, which
   discards on average 15% of an asset and up to 43% of a landscape one —
   `Asset.aspect` is recorded but nothing reads it yet.
+- Seamless loops. A template that scrolls or rotates only repeats after
+  travelling a whole cycle, so the loop cuts unless `speed × duration` lands on a
+  multiple of it. At factory settings Orbit jumps a third of the canvas diagonal
+  when it wraps, and Carousel, Marquee and Stories each have images appear from
+  nowhere. Closing it means either constraining those two controls against each
+  other, or blending the tail into the head at export.
 - Persisting uploads (IndexedDB), so they survive a reload like everything else.
 - Undo/redo, keyboard transport shortcuts, MP4/WebM and frame-rate pickers
   (`canvas.format` and `canvas.fps` exist in the store with no UI).

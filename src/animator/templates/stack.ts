@@ -6,7 +6,7 @@ import { gauss, num, pick, str, wrap } from "./_shared";
 // selector frame; the framed item blooms.
 const THUMB_ASPECT = 3 / 4;
 
-/** Shared by `render` and `loopCycle` so the two can never drift apart. */
+/** Layout of the arrangement, kept out of `render` so it reads as one step. */
 function filmstrip(params: ParamValues, width: number) {
   const count = Math.round(num(params.count, 8));
   const thumbW = (num(params.thumbSize, 100) / 100) * width * 0.34;
@@ -43,7 +43,6 @@ export const stack: Template = {
     { type: "slider", key: "speed", label: "Speed", min: 0, max: 220, default: 70, unit: "px/s" },
     { type: "toggle", key: "selector", label: "Show Selector", default: true },
   ],
-  loopCycle: ({ params, width }) => ({ span: filmstrip(params, width).totalSpan, speedKey: "speed" }),
   render: ({ raw, width, height, assets, params }) => {
     const cx = width / 2;
     const cy = height / 2;

@@ -19,9 +19,6 @@ export const wheel: Template = {
     { type: "slider", key: "depth", label: "Depth Scale", min: 0, max: 80, default: 45, unit: "%" },
     { type: "toggle", key: "faceCenter", label: "Face Center", default: false },
   ],
-  // Each card carries a different image, so the ring only repeats after a whole
-  // revolution — not after one card-step.
-  loopCycle: () => ({ span: 360, speedKey: "rotateSpeed" }),
   render: ({ raw, width, height, assets, params }) => {
     const cx = width / 2;
     const cy = height / 2;

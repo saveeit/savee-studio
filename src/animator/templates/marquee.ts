@@ -4,7 +4,7 @@ import { num, pick, bool, wrap } from "./_shared";
 // Multiple horizontal rows scrolling, alternating directions.
 const THUMB_ASPECT = 3 / 4;
 
-/** Shared by `render` and `loopCycle` so the two can never drift apart. */
+/** Layout of the arrangement, kept out of `render` so it reads as one step. */
 function rowsOf(params: ParamValues, width: number, height: number) {
   const rows = Math.round(num(params.rows, 3));
   const perRow = Math.round(num(params.perRow, 6));
@@ -34,10 +34,6 @@ export const marquee: Template = {
     { type: "slider", key: "speed", label: "Speed", min: 0, max: 320, default: 120, unit: "px/s" },
     { type: "toggle", key: "alternate", label: "Alternate Dir", default: true },
   ],
-  loopCycle: ({ params, width, height }) => ({
-    span: rowsOf(params, width, height).total,
-    speedKey: "speed",
-  }),
   render: ({ raw, width, height, assets, params }) => {
     const { rows, perRow, gapY, thumbW, thumbH, spacing, total } = rowsOf(params, width, height);
     const radius = num(params.cornerRadius, 8);
