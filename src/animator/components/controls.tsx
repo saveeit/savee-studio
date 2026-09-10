@@ -52,11 +52,9 @@ export function Slider({
       <div
         ref={trackRef}
         role="slider"
-        aria-label={label}
         aria-valuemin={min}
         aria-valuemax={max}
         aria-valuenow={value}
-        aria-valuetext={display}
         tabIndex={0}
         onPointerDown={(e) => {
           dragging.current = true;
@@ -78,7 +76,7 @@ export function Slider({
           if (e.key === "ArrowRight" || e.key === "ArrowUp")
             onChange(Number(Math.min(max, value + step).toFixed(6)));
         }}
-        className="relative h-4 cursor-pointer touch-none select-none rounded-full outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="relative h-4 cursor-pointer touch-none select-none outline-none"
       >
         <div className="absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-surface-2" />
         <div
@@ -112,21 +110,16 @@ export function Segmented({
   options: { label: string; value: string | number }[];
   onChange: (v: string | number) => void;
 }) {
-  const groupId = React.useId();
   return (
     <div className="py-3">
-      <div id={groupId} className="mb-2.5 text-[13px] text-muted">
-        {label}
-      </div>
-      <div role="radiogroup" aria-labelledby={groupId} className="flex gap-1 rounded-[10px] bg-surface p-1">
+      <div className="mb-2.5 text-[13px] text-muted">{label}</div>
+      <div className="flex gap-1 rounded-[10px] bg-surface p-1">
         {options.map((o) => (
           <button
             key={String(o.value)}
-            role="radio"
-            aria-checked={value === o.value}
             onClick={() => onChange(o.value)}
             className={cn(
-              "flex-1 rounded-[7px] px-2 py-2 text-[12.5px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+              "flex-1 rounded-[7px] px-2 py-2 text-[12.5px] font-medium transition-colors",
               value === o.value
                 ? "bg-surface-2 text-white"
                 : "text-gray-400 hover:text-gray-200",
@@ -153,12 +146,9 @@ export function Toggle({
     <div className="flex items-center justify-between py-3">
       <span className="text-[13px] text-muted">{label}</span>
       <button
-        role="switch"
-        aria-checked={value}
-        aria-label={label}
         onClick={() => onChange(!value)}
         className={cn(
-          "relative h-[24px] w-[42px] rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+          "relative h-[24px] w-[42px] rounded-full transition-colors",
           value ? "bg-brand" : "bg-surface-2",
         )}
       >
@@ -186,7 +176,7 @@ export function ColorInput({
   return (
     <div className="flex items-center gap-3 py-2">
       <span className="w-14 shrink-0 text-[13px] text-muted">{label}</span>
-      <label className="relative flex flex-1 cursor-pointer items-center gap-2.5 rounded-[10px] border border-line bg-surface px-3 py-2.5 focus-within:border-gray-600 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent">
+      <label className="flex flex-1 cursor-pointer items-center gap-2.5 rounded-[10px] border border-line bg-surface px-3 py-2.5">
         <span
           className="h-5 w-5 rounded-[6px] ring-1 ring-white/15"
           style={{ background: value }}
@@ -197,7 +187,6 @@ export function ColorInput({
         <span className="ml-auto font-mono text-[12px] text-gray-500">100%</span>
         <input
           type="color"
-          aria-label={label}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="absolute h-0 w-0 opacity-0"
@@ -219,18 +208,14 @@ export function TextField({
   placeholder?: string;
   onChange: (v: string) => void;
 }) {
-  const id = React.useId();
   return (
     <div className="flex items-center gap-3 py-2">
-      <label htmlFor={id} className="w-14 shrink-0 text-[13px] text-muted">
-        {label}
-      </label>
+      <span className="w-14 shrink-0 text-[13px] text-muted">{label}</span>
       <input
-        id={id}
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="flex-1 rounded-[10px] border border-line bg-surface px-3 py-2.5 text-[13px] text-white outline-none placeholder:text-gray-500 focus:border-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="flex-1 rounded-[10px] border border-line bg-surface px-3 py-2.5 text-[13px] text-white outline-none placeholder:text-gray-500 focus:border-gray-600"
       />
     </div>
   );

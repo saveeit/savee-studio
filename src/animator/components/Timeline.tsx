@@ -75,24 +75,20 @@ export function Timeline() {
     <div className="flex h-[64px] shrink-0 items-center gap-4 border-t border-separator bg-panel px-6">
       <button
         onClick={togglePlay}
-        aria-label={playing ? "Pause" : "Play"}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-surface-2 text-white transition-colors hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-surface-2 text-white transition-colors hover:bg-gray-600"
       >
-        {playing ? <Pause className="h-4 w-4" aria-hidden /> : <Play className="ml-0.5 h-4 w-4" aria-hidden />}
+        {playing ? <Pause className="h-4 w-4" /> : <Play className="ml-0.5 h-4 w-4" />}
       </button>
 
       <button
         onClick={() => setLoop(!loop)}
         title="Loop"
-        role="switch"
-        aria-checked={loop}
-        aria-label="Loop playback"
         className={cn(
-          "flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] transition-colors",
           loop ? "bg-brand/15 text-brand-2" : "text-gray-500 hover:bg-surface hover:text-gray-300",
         )}
       >
-        <Repeat className="h-4 w-4" aria-hidden />
+        <Repeat className="h-4 w-4" />
       </button>
 
       <div
@@ -100,13 +96,7 @@ export function Timeline() {
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
-        role="slider"
-        aria-label="Playhead"
-        aria-valuemin={0}
-        aria-valuemax={Math.round(duration * 10) / 10}
-        aria-valuenow={undefined}
-        tabIndex={0}
-        className="group relative h-9 flex-1 cursor-pointer rounded-full outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="group relative h-9 flex-1 cursor-pointer"
       >
         <div className="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-surface-2" />
         <div

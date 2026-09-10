@@ -33,16 +33,16 @@ function Section({
     <div className="border-b border-line">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between px-4 pb-3 pt-5 xl:px-6 text-[15px] font-medium text-white"
+        className="flex w-full items-center justify-between px-6 pb-3 pt-5 text-[15px] font-medium text-white"
       >
         {title}
         {open ? (
-          <ChevronUp className="h-4 w-4 text-gray-500" aria-hidden />
+          <ChevronUp className="h-4 w-4 text-gray-500" />
         ) : (
-          <ChevronDown className="h-4 w-4 text-gray-500" aria-hidden />
+          <ChevronDown className="h-4 w-4 text-gray-500" />
         )}
       </button>
-      {open && <div className="px-4 pb-5 xl:px-6">{children}</div>}
+      {open && <div className="px-6 pb-5">{children}</div>}
     </div>
   );
 }
@@ -74,7 +74,7 @@ function SortableAsset({
         {...attributes}
         {...listeners}
         className="shrink-0 cursor-grab touch-none text-gray-600 hover:text-gray-300 active:cursor-grabbing"
-        aria-label={`Reorder ${asset.name}`} title="Drag to reorder"
+        title="Drag to reorder"
       >
         <GripVertical className="h-4 w-4" />
       </button>
@@ -90,7 +90,7 @@ function SortableAsset({
       <button
         onClick={onRemove}
         className="shrink-0 rounded p-1 text-gray-500 opacity-0 transition-opacity hover:text-danger group-hover:opacity-100"
-        aria-label={`Remove ${asset.name}`} title="Remove"
+        title="Remove"
       >
         <X className="h-3.5 w-3.5" />
       </button>
@@ -142,7 +142,7 @@ function CanvasSection() {
             <button
               onClick={() => setCanvas({ aspect: a.id })}
               className={cn(
-                "w-full rounded-[7px] py-2 text-[12px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+                "w-full rounded-[7px] py-2 text-[12px] font-medium transition-colors",
                 aspect === a.id
                   ? "bg-surface-2 text-white"
                   : "text-gray-400 hover:text-gray-200",
@@ -333,7 +333,7 @@ function AssetsSection() {
 
 export function SettingsPanel() {
   return (
-    <div className="flex h-full w-[268px] shrink-0 flex-col border-l border-separator bg-panel xl:w-[320px]">
+    <div className="flex h-full w-[320px] shrink-0 flex-col border-l border-separator bg-panel">
       <div className="scroll-thin flex-1 overflow-y-auto">
         <CanvasSection />
         <BackgroundSection />

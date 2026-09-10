@@ -17,13 +17,12 @@ export function ControlsPanel() {
   const resetParams = useAnimator((s) => s.resetParams);
 
   return (
-    <div className="flex h-full w-[248px] shrink-0 flex-col border-r border-separator bg-panel xl:w-[296px]">
-      <div className="px-4 pb-3 pt-6 xl:px-6">
+    <div className="flex h-full w-[296px] shrink-0 flex-col border-r border-separator bg-panel">
+      <div className="px-6 pb-3 pt-6">
         <div className="flex items-center justify-between">
           <h2 className="text-[15px] font-medium text-white">Customize</h2>
           <button
             onClick={resetParams}
-            aria-label="Reset controls to defaults"
             title="Reset to defaults"
             className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[12px] text-gray-400 transition-colors hover:bg-surface hover:text-gray-200"
           >
@@ -36,7 +35,7 @@ export function ControlsPanel() {
         </div>
       </div>
 
-      <div className="scroll-thin flex-1 overflow-y-auto px-4 pb-8 xl:px-6">
+      <div className="scroll-thin flex-1 overflow-y-auto px-6 pb-8">
         {template.params.map((p) => {
           switch (p.type) {
             case "slider":

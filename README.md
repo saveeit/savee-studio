@@ -39,14 +39,12 @@ makes scrubbing, looping, and export all consistent.
 - **Export** (`exporter.ts`) writes **MP4 (H.264)** by default via deterministic,
   frame-by-frame **WebCodecs** encoding (30fps), falling back to a real-time
   `MediaRecorder` WebM where WebCodecs is unavailable. The muxers are imported on
-  demand, so they stay out of the initial bundle. Exports report progress and an
-  estimate, and can be cancelled mid-run. The selected **aspect ratio sets the
-  output resolution** (predefined in `store.ts`: 1:1→1080², 9:16→1080×1920,
+  demand, so they stay out of the initial bundle. The selected **aspect ratio sets
+  the output resolution** (predefined in `store.ts`: 1:1→1080², 9:16→1080×1920,
   3:4→1080×1440, 4:3→1440×1080, 16:9→1920×1080).
 - **State** lives in a single zustand store (`src/animator/store.ts`): selection,
-  per-template params, canvas settings, text overlay, assets, playback. Everything
-  but the playhead is persisted to `localStorage`, so a reload keeps your work.
-  Uploads are the exception — an object URL dies with the page that made it.
+  per-template params, canvas settings, text overlay, assets, playback. None of it
+  is persisted yet, so a reload starts over.
 
 ### The playhead is not React state
 
@@ -98,7 +96,17 @@ browser.
   when it wraps, and Carousel, Marquee and Stories each have images appear from
   nowhere. Closing it means either constraining those two controls against each
   other, or blending the tail into the head at export.
-- Persisting uploads (IndexedDB), so they survive a reload like everything else.
+- Persistence. Nothing survives a reload today, under a top bar that reads "Sign
+  in to save your work". Params, canvas and text are plain JSON and would fit in
+  `localStorage`; uploads need IndexedDB, since an object URL dies with the page
+  that made it.
+- Cancelling an export, and an estimate of how long one will take. Today it runs
+  to completion with only a percentage, and reports its outcome through
+  `alert()`.
 - Undo/redo, keyboard transport shortcuts, MP4/WebM and frame-rate pickers
   (`canvas.format` and `canvas.fps` exist in the store with no UI).
+- A responsive layout. The three panels are 888px of fixed width with no
+  breakpoints, leaving 392px of stage on a 1280px screen.
+- Accessibility beyond the slider: the segmented, toggle and colour controls
+  expose no role or state, and there are no focus rings.
 - Audio track + waveform.

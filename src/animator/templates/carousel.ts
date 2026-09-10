@@ -1,16 +1,6 @@
-import type { Layer, ParamValues, Template } from "../types";
+import type { Layer, Template } from "../types";
 import { clamp, mapClamp } from "../easing";
 import { gauss, num, pick, str, wrap } from "./_shared";
-
-const THUMB_ASPECT = 3 / 4;
-
-/** Layout of the arrangement, kept out of `render` so it reads as one step. */
-function strip(params: ParamValues, width: number) {
-  const count = Math.round(num(params.count, 7));
-  const thumbW = (num(params.thumbSize, 100) / 100) * width * 0.26;
-  const spacing = thumbW + num(params.gap);
-  return { count, thumbW, thumbH: thumbW / THUMB_ASPECT, spacing, total: count * spacing };
-}
 
 export const carousel: Template = {
   id: "carousel",
@@ -44,7 +34,13 @@ export const carousel: Template = {
     const cy = height / 2;
     const dir = str(params.direction, "left") === "left" ? -1 : 1;
 
-    const { count, thumbW, thumbH, spacing, total } = strip(params, width);
+    const count = Math.round(num(params.count, 7));
+    const aspectWH = 3 / 4;
+    const thumbW = (num(params.thumbSize, 100) / 100) * width * 0.26;
+    const thumbH = thumbW / aspectWH;
+    const gap = num(params.gap);
+    const spacing = thumbW + gap;
+    const total = count * spacing;
 
     const bigScale = num(params.bigScale, 150) / 100;
     const focusW = (num(params.focus, 42) / 100) * width * 0.5;
