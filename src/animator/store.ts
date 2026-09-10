@@ -62,6 +62,7 @@ interface AnimatorState {
   setText: (patch: Partial<TextOverlay>) => void;
 
   addAssets: (assets: Asset[]) => void;
+  setAssetThumb: (id: string, thumb: string) => void;
   removeAsset: (id: string) => void;
   clearAssets: () => void;
   reorderAssets: (activeId: string, overId: string) => void;
@@ -136,6 +137,8 @@ export const useAnimator = create<AnimatorState>((set, get) => ({
   setText: (patch) => set((s) => ({ text: { ...s.text, ...patch } })),
 
   addAssets: (assets) => set((s) => ({ assets: [...s.assets, ...assets] })),
+  setAssetThumb: (id, thumb) =>
+    set((s) => ({ assets: s.assets.map((a) => (a.id === id ? { ...a, thumb } : a)) })),
   removeAsset: (id) => set((s) => ({ assets: s.assets.filter((a) => a.id !== id) })),
   clearAssets: () => set({ assets: [] }),
   reorderAssets: (activeId, overId) =>

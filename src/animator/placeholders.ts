@@ -62,6 +62,9 @@ export function makePlaceholders(): Asset[] {
     id: `asset-${i}`,
     name: a.name,
     src: a.file,
+    // 160px variants live alongside the originals; the sidebar list shows a
+    // 32x40 box, so shipping the full-size jpg there wastes bytes and decode.
+    thumb: a.file.replace("/assets/", "/assets/thumbs/"),
     aspect: a.aspect,
   }));
 }
