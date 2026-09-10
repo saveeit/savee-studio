@@ -12,8 +12,6 @@ export interface Asset {
   id: string;
   name: string;
   src: string; // object URL, data URI, or remote URL
-  /** small downscaled variant used by the sidebar list; falls back to `src` */
-  thumb?: string;
   /** intrinsic aspect (w/h) when known, used for cover-fitting */
   aspect?: number;
 }

@@ -9,10 +9,7 @@
     "build": "next build",
     "start": "next start -p 3100",
     "lint": "next lint",
-    "type": "tsc --noEmit",
-    "thumbs": "node scripts/make-thumbs.mjs",
-    "predev": "node scripts/make-thumbs.mjs",
-    "prebuild": "node scripts/make-thumbs.mjs"
+    "type": "tsc --noEmit"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -35,7 +32,6 @@
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
-    "sharp": "^0.35.4",
     "tailwindcss": "^3.4.15",
     "typescript": "^5.6.0"
   }

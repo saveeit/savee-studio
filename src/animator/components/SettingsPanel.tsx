@@ -80,7 +80,7 @@ function SortableAsset({
       </button>
       <span className="w-4 text-right text-[12px] tabular-nums text-gray-600">{index + 1}</span>
       <img
-        src={asset.thumb ?? asset.src}
+        src={asset.src}
         alt=""
         loading="lazy"
         decoding="async"
@@ -99,29 +99,6 @@ function SortableAsset({
 }
 
 let uploadSeq = 0;
-
-const THUMB_PX = 160;
-
-/** Decode once at list size; returns a data URL, or null if decoding failed. */
-async function makeThumb(src: string): Promise<string | null> {
-  try {
-    const res = await fetch(src);
-    const bitmap = await createImageBitmap(await res.blob());
-    const ratio = Math.min(1, THUMB_PX / Math.max(bitmap.width, bitmap.height));
-    const w = Math.max(1, Math.round(bitmap.width * ratio));
-    const h = Math.max(1, Math.round(bitmap.height * ratio));
-    const cv = document.createElement("canvas");
-    cv.width = w;
-    cv.height = h;
-    const ctx = cv.getContext("2d");
-    if (!ctx) return null;
-    ctx.drawImage(bitmap, 0, 0, w, h);
-    bitmap.close();
-    return cv.toDataURL("image/jpeg", 0.7);
-  } catch {
-    return null;
-  }
-}
 
 /**
  * Each section subscribes only to the store slice it renders. Keeping them as
@@ -246,7 +223,7 @@ function AssetsSection() {
     if (over && active.id !== over.id) reorderAssets(String(active.id), String(over.id));
   };
 
-  const handleFiles = async (files: FileList | null) => {
+  const handleFiles = (files: FileList | null) => {
     if (!files) return;
     const picked = Array.from(files).filter((f) => f.type.startsWith("image/"));
     if (!picked.length) return;
@@ -257,13 +234,6 @@ function AssetsSection() {
       src: URL.createObjectURL(f),
     }));
     addAssets(next);
-
-    // Uploads arrive at full resolution; the list only ever shows a 32x40 box,
-    // so decode a small variant for it once instead of on every paint.
-    for (const asset of next) {
-      const thumb = await makeThumb(asset.src);
-      if (thumb) useAnimator.getState().setAssetThumb(asset.id, thumb);
-    }
   };
 
   return (
