@@ -10,7 +10,7 @@ Matches the Savee `www` app conventions:
 
 - **Next.js 15** (Pages Router) · **React 18** · **TypeScript**
 - **Tailwind 3** · **zustand 5** · **lucide-react** · `clsx` + `tailwind-merge`
-- **pnpm**
+- **pnpm** · **sharp** (dev only — builds the asset thumbnails)
 
 ## Run
 
@@ -19,6 +19,7 @@ pnpm install
 pnpm dev      # http://localhost:3100
 pnpm build    # production build
 pnpm type     # typecheck
+pnpm thumbs   # regenerate the sidebar thumbnails (dev and build do this for you)
 ```
 
 ## How it works
@@ -63,17 +64,21 @@ to `time`; a component that needs it reads `useAnimator.getState()`.
 
 The starter assets are bundled images in the repo (no network calls):
 
-- `public/assets/*.jpg` — downscaled (long side 1200px), served same-origin so
-  canvas export never hits CORS tainting.
-- `public/assets/thumbs/*.jpg` — 160px variants for the sidebar list, which would
-  otherwise decode the full-size file into a 32×40 box.
+- `public/assets/*.avif` — AVIF, long side 1200px, served same-origin so canvas
+  export never hits CORS tainting. AVIF at quality 70 is 70% smaller than the
+  equivalent JPEG and stays above 41 dB PSNR on the worst image in the set.
+- `public/assets/thumbs/*.avif` — 160px variants for the sidebar list, **generated,
+  not committed**. `scripts/make-thumbs.mjs` builds them from whatever is in
+  `public/assets`, and `predev`/`prebuild` run it, so they are always in step with
+  the sources. The list paints each asset in a 32×40 box; handing it the full-size
+  file means decoding 61MB of bitmap across the set instead of 1MB.
 - `src/animator/placeholderAssets.json` — the manifest (file, name, aspect).
 
-To swap them, drop new images in `public/assets/`, put a downscaled copy of each
-under `public/assets/thumbs/` with the same filename, and update the manifest —
-the thumb path is derived from the file path, so a missing one shows as a broken
-image in the sidebar. Uploads from the right panel still work alongside these,
-and get a thumbnail generated in the browser.
+To swap them, drop new images in `public/assets/` and update the manifest — the
+thumbnails regenerate on the next `pnpm dev` or `pnpm build`, or on `pnpm thumbs`.
+Any format sharp can read works as a source; AVIF is what the sidebar and the
+canvas end up serving either way. Uploads from the right panel still work
+alongside these, and get a thumbnail made in the browser.
 
 ### Templates included
 
